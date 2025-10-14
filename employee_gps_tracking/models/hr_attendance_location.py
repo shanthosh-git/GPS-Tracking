@@ -14,3 +14,4 @@ class HrAttendanceLocation(models.Model):
     latitude = fields.Float(string='Latitude', digits=(10, 7))
     longitude = fields.Float(string='Longitude', digits=(10, 7))
     timestamp = fields.Datetime(string='Timestamp', default=fields.Datetime.now, required=True)
+    travel_distance = fields.Float(string='distance travelled')
