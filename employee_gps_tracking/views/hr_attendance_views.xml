@@ -1,0 +1,32 @@
+<odoo>
+    <data>
+
+        <record id="hr_attendance_location_view_tree" model="ir.ui.view">
+            <field name="name">hr.attendance.location.tree</field>
+            <field name="model">hr.attendance.location</field>
+            <field name="arch" type="xml">
+                <tree editable="bottom">
+                    <field name="timestamp"/>
+                    <field name="latitude"/>
+                    <field name="longitude"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="hr_attendance_view_form_inherit_gps" model="ir.ui.view">
+            <field name="name">hr.attendance.form.inherit.gps</field>
+            <field name="model">hr.attendance</field>
+            <field name="inherit_id" ref="hr_attendance.hr_attendance_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet" position="inside">
+                    <notebook>
+                        <page string="GPS Locations" name="gps_locations">
+                            <field name="location_ids"/>
+                        </page>
+                    </notebook>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>
