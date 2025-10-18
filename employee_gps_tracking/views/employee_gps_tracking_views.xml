@@ -1,0 +1,14 @@
+<odoo>
+    <data>
+        <record id="action_employee_live_track" model="ir.actions.client">
+            <field name="name">Live Track</field>
+            <field name="tag">employee_gps_tracking.map</field>
+        </record>
+
+        <menuitem id="menu_employee_live_track" 
+                  name="Live Track" 
+                  parent="hr_attendance.menu_hr_attendance_root" 
+                  action="action_employee_live_track" 
+                  sequence="10"/>
+    </data>
+</odoo>

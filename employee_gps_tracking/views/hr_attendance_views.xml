@@ -9,7 +9,6 @@
                     <field name="timestamp"/>
                     <field name="latitude"/>
                     <field name="longitude"/>
-                    <field name="travel_distance"/>        
                 </list>
             </field>
         </record>
@@ -23,6 +22,9 @@
                     <notebook>
                         <page string="GPS Locations" name="gps_locations">
                             <field name="location_ids"/>
+                            <group class="oe_subtotal_footer oe_right" colspan="2">
+                                <field name="total_distance"/>
+                            </group>
                         </page>
                     </notebook>
                 </xpath>
