@@ -38,14 +38,21 @@ class HrEmployee(models.Model):
 
     @api.model
     def get_live_employee_data(self):
-        clocked_in_employees = self.env['hr.employee'].search([
-            ('current_attendance_id', '!=', False),
-            ('latest_latitude', '!=', 0),
-            ('latest_longitude', '!=', 0),
+        active_attendances = self.env['hr.attendance'].search([
+            ('check_out', '=', False)
         ])
-        return clocked_in_employees.read([
-            'id',
-            'name',
-            'latest_latitude',
-            'latest_longitude',
-        ])
+        employee_data = []
+        for attendance in active_attendances:
+            # Get the most recent location for this specific attendance
+            latest_location = self.env['hr.attendance.location'].search([
+                ('attendance_id', '=', attendance.id)
+            ], order='timestamp desc', limit=1)
+
+            if latest_location:
+                employee_data.append({
+                    'id': attendance.employee_id.id,
+                    'name': attendance.employee_id.name,
+                    'latest_latitude': latest_location.latitude,
+                    'latest_longitude': latest_location.longitude,
+                })
+        return employee_data

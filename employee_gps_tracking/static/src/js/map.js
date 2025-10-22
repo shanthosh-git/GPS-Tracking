@@ -1,7 +1,8 @@
 /** @odoo-module **/
 
-import { Component, onMounted, useRef } from "@odoo/owl";
+import { Component, onMounted, onWillUnmount, useRef } from "@odoo/owl";
 import { registry } from "@web/core/registry";
+import { useService } from "@web/core/utils/hooks";
 
 export class MapView extends Component {
     static template = "employee_gps_tracking.MapView";
@@ -9,17 +10,26 @@ export class MapView extends Component {
 
     setup() {
         this.mapRef = useRef("mapCanvas");
+        this.orm = useService("orm");
+        this.markers = [];
+        this.interval = null;
 
         onMounted(async () => {
-            // Wait until DOM is truly ready
             await this._waitForElement(this.mapRef);
             await this._loadGoogleMaps();
             this._renderMap();
+            this._getAndRenderEmployees();
+            this.interval = setInterval(() => this._getAndRenderEmployees(), 10000); // Refresh every 10 seconds
+        });
+
+        onWillUnmount(() => {
+            if (this.interval) {
+                clearInterval(this.interval);
+            }
         });
     }
 
     async _waitForElement(ref) {
-        // retry until element exists (helps when Odoo mounts slowly)
         let retries = 0;
         while ((!ref.el || !document.body.contains(ref.el)) && retries < 20) {
             await new Promise((r) => setTimeout(r, 100));
@@ -58,10 +68,43 @@ export class MapView extends Component {
         const mapOptions = {
             center: { lat: 21.7679, lng: 72.1522 },
             zoom: 8,
+            minZoom: 2, // Prevent zooming out too far
             mapTypeId: google.maps.MapTypeId.ROADMAP,
         };
 
-        new google.maps.Map(container, mapOptions);
+        this.map = new google.maps.Map(container, mapOptions);
+    }
+
+    async _getAndRenderEmployees() {
+        const employeeData = await this.orm.call(
+            "hr.employee",
+            "get_live_employee_data",
+            []
+        );
+
+        console.log("Live employee location data from server:", employeeData);
+
+        // Clear existing markers
+        this.markers.forEach(marker => marker.setMap(null));
+        this.markers = [];
+
+        employeeData.forEach(employee => {
+            const marker = new google.maps.Marker({
+                position: { lat: employee.latest_latitude, lng: employee.latest_longitude },
+                map: this.map,
+                title: employee.name,
+            });
+
+            const infoWindow = new google.maps.InfoWindow({
+                content: `<h5>${employee.name}</h5>`
+            });
+
+            marker.addListener('click', () => {
+                infoWindow.open(this.map, marker);
+            });
+
+            this.markers.push(marker);
+        });
     }
 }
 
